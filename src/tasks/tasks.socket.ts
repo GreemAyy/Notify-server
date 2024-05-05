@@ -9,11 +9,10 @@ export class TasksGetaway{
 
     @SubscribeMessage('update')
     onTaskCreated(@MessageBody() body: any){ 
-        console.log(body);
         this.server.emit('update', body);
     }
     @SubscribeMessage('change')
-    onTaskChange(@MessageBody() body: any){ 
+    onTaskChange(@MessageBody() body: any){  
         this.server.emit('change', body);
     }
     @SubscribeMessage('delete')

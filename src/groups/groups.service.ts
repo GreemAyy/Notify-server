@@ -1,8 +1,9 @@
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { AccessesEntity, GroupAccessesStatus, GroupsEntity } from "./groups.entity";
+import { GroupAccessesStatus, GroupsEntity } from "./groups.entity";
 import { In, Repository } from "typeorm";
 import { UpdateGroupInput } from "./groups.controller";
+import { AccessesEntity } from "src/users/users.entity";
 
 @Injectable()
 export class GroupsService {

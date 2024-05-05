@@ -22,7 +22,6 @@ export class ImagesController {
     const fileName = `${name}.${fileExpansion}`;
     const pathTo = path.resolve(__dirname,'../../images',fileName);
     const addId = await this.imagesService.addImage(fileName);
-    console.log(addId)
     if(addId>0){
       await asyncfs.writeFile(pathTo,file.buffer);
       return {added:true, id:addId}

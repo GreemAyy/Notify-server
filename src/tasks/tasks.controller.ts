@@ -70,7 +70,7 @@ export class TasksController {
 
   @Get('single/:id')
   async getSingleTask(@Param('id') id:string){
-    return await this.tasksService.getSingle(+id)
+    return {"task":(await this.tasksService.getSingle(+id))??null}
   }
 
   @Get('get-group-all/:id')

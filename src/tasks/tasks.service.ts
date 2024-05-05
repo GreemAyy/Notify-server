@@ -25,10 +25,8 @@ export class TasksService {
     const find = await this.tasksRepository.findBy({
       creator_id:user_id,
       group_id:0,
-      day_from:  LessThanOrEqual(date[0]), 
       month_from:LessThanOrEqual(date[1]),
       year_from: LessThanOrEqual(date[2]),
-      day_to:  MoreThanOrEqual(date[0]),
       month_to:MoreThanOrEqual(date[1]),
       year_to: MoreThanOrEqual(date[2])
     })
@@ -36,12 +34,11 @@ export class TasksService {
   }
 
   async getGroupTasks({group_id, date}:GetGroupTasksInput){
+    console.log(group_id,"-", date)
     const find = await this.tasksRepository.findBy({
       group_id,
-      day_from:  LessThanOrEqual(date[0]), 
       month_from:LessThanOrEqual(date[1]),
       year_from: LessThanOrEqual(date[2]),
-      day_to:  MoreThanOrEqual(date[0]),
       month_to:MoreThanOrEqual(date[1]),
       year_to: MoreThanOrEqual(date[2]) 
     })

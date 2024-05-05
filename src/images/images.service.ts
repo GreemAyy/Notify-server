@@ -9,7 +9,7 @@ import * as asyncfs from 'fs/promises'
 export class ImagesService {
   constructor(
     @InjectRepository(ImagesEntity)
-    private imagesRepository:Repository<ImagesEntity>
+    private imagesRepository:Repository<ImagesEntity>,
   ) {}
 
   async addImage(name:string){

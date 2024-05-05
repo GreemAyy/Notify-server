@@ -1,9 +1,9 @@
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { CodesEntity, HashesEntity, UsersEntity } from "./users.entity";
-import { Repository } from "typeorm";
+import { AccessesEntity, CodesEntity, HashesEntity, UsersEntity } from "./users.entity";
+import { In, Repository } from "typeorm";
 import { sendMail } from "../email/sendMail";
-import type { LogInput, AuthInput, CheckInput } from "./users.controller";
+import type { LogInput, AuthInput, CheckInput, UpdateInput } from "./users.controller";
 
 @Injectable()
 export class UsersService {
@@ -13,7 +13,9 @@ export class UsersService {
     @InjectRepository(HashesEntity)
     private hashesRepository:Repository<HashesEntity>,
     @InjectRepository(CodesEntity)
-    private codesRepository:Repository<CodesEntity>
+    private codesRepository:Repository<CodesEntity>,
+    @InjectRepository(AccessesEntity)
+    private accessesRepository:Repository<AccessesEntity>
   ) {}
 
   async log({email, code, password}:LogInput){
@@ -104,8 +106,28 @@ export class UsersService {
     }
     return false;
   }
-
   private async checkUserAlreadyCreated(email:string) : Promise<boolean> {
     return Boolean((await this.usersRepository.findBy({ email })).length);
+  }
+  async update(body:UpdateInput){
+    try{
+      await this.usersRepository.update({id:body.id}, {name:body.name});
+      return true
+    }catch(_){return false}
+  }
+  async getGroup(id:number){
+    const accesses = await this.accessesRepository.findBy({group_id:id});
+    const users = await this.usersRepository.findBy({
+      id:In(accesses.map(a=>a.user_id))
+    })
+    return users.map(e=>({id: e.id, name:e.name}));
+  }
+  async get(id:number){
+    const user = await this.usersRepository.findOneBy({id});
+    if(user){
+      delete user.password;
+      delete user.email;
+      return user;
+    } return null;
   }
 }
