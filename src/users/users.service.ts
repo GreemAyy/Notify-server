@@ -24,8 +24,7 @@ export class UsersService {
     if(checkCode && checkCode.code == code){
       const isCreated = await this.checkUserAlreadyCreated(email);
       if(!isCreated){
-        const create = await this.create({email, password});
-        console.log(create)
+        await this.create({email, password, images:[]});
       }
       const hash = this.generateHash(24);
       const user = await this.usersRepository.findOneBy({email})
@@ -36,9 +35,10 @@ export class UsersService {
      return {access};
   }
   async auth({email, password}: AuthInput){
+    email = email.trim();
+    password = password.trim();
     const isCreated = await this.checkUserAlreadyCreated(email);
     let auth = true;
-    console.log(isCreated)
     if(isCreated){
       const currentUser = await this.usersRepository.findOneBy({email})
       if(currentUser.password != password)
@@ -98,10 +98,10 @@ export class UsersService {
     return code;
   }
 
-  private async create({email, password}: AuthInput){
+  private async create({email, password, images=[]}: AuthInput&{images: number[]}){
     const isCreated = await this.checkUserAlreadyCreated(email);
     if(!isCreated){
-      await this.usersRepository.insert({ email, password, name:'-' });
+      await this.usersRepository.insert({ email, password, name:'-', images});
       return true
     }
     return false;
@@ -120,7 +120,7 @@ export class UsersService {
     const users = await this.usersRepository.findBy({
       id:In(accesses.map(a=>a.user_id))
     })
-    return users.map(e=>({id: e.id, name:e.name}));
+    return users.map(e=>({id: e.id, name:e.name, images: e.images}));
   }
   async get(id:number){
     const user = await this.usersRepository.findOneBy({id});

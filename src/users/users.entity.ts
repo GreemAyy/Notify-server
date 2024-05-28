@@ -20,6 +20,8 @@ export class UsersEntity{
   email:string
   @Column({name:'password', type:'varchar',length:50})
   password:string
+  @Column({name:"images", type:'json'})
+  images:number[]
 }
 
 @Entity('hashes')

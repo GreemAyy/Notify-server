@@ -17,6 +17,8 @@ export type DeleteInput = {id:number};
 export type ChangeStatusInput = {id:number, status:number};
 export type SearchInput = {text:string, id:number, groupId:number}
 export type DeleteImagesInput = {id:number, images:number[]};
+export type CreateAccessTasks = {task_id:number, users_id:number[]}
+
 @Controller('tasks')
 export class TasksController {
   constructor(
@@ -76,6 +78,16 @@ export class TasksController {
   @Get('get-group-all/:id')
   async getGroupsAll(@Param('id') id:string){
     return await this.tasksService.getGroupsAll(+id);
+  }
+
+  @Get("get-task-access/:id")
+  async getTaskAccess(@Param('id') id:string){
+    return {"access": await this.tasksService.getTaskAccess(+id)};
+  }
+
+  @Post('create-task-access')
+  async createTaskAccess(@Body() body:CreateAccessTasks){
+    return {"created": await this.tasksService.createTaskAccess(body)}
   }
 
   @Post('/delete-images')

@@ -40,7 +40,6 @@ export class UsersController {
   }
   @Post('check')
   async check(@Body() body:CheckInput){
-  
     try {
       return await this.usersService.checkAccess(body);
     }catch (_){

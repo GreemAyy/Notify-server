@@ -1,8 +1,8 @@
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { GroupAccessesStatus, GroupsEntity } from "./groups.entity";
+import { GroupAccessesStatus, GroupsEntity, InviteGroupCodesEntity } from "./groups.entity";
 import { In, Repository } from "typeorm";
-import { UpdateGroupInput } from "./groups.controller";
+import { InviteGroupInput, JoinGroupInput, UpdateGroupInput } from "./groups.controller";
 import { AccessesEntity } from "src/users/users.entity";
 
 @Injectable()
@@ -11,8 +11,12 @@ export class GroupsService {
     @InjectRepository(GroupsEntity)
     private groupsRepository: Repository<GroupsEntity>,
     @InjectRepository(AccessesEntity)
-    private accessesRepository: Repository<AccessesEntity>
+    private accessesRepository: Repository<AccessesEntity>,
+    @InjectRepository(InviteGroupCodesEntity)
+    private inviteCodesRepository: Repository<InviteGroupCodesEntity>
   ) {}
+
+  #INVITE_CODE_LENGTH = 10;
 
   async getUsersGroups(user_id:number){
     const usersAccesses = await this.accessesRepository.findBy({user_id});
@@ -38,8 +42,42 @@ export class GroupsService {
   async getSingle(id:number){
     return await this.groupsRepository.findOneBy({id});
   }
-
   async update({id, name, image_id}:UpdateGroupInput){
     this.groupsRepository.update({id},{name, image_id});
+  }
+  async invite({user_id, group_id}:InviteGroupInput){
+    const maybeInviteCode = await this.inviteCodesRepository.findOneBy({group_id});
+    if(maybeInviteCode) return maybeInviteCode.code;
+    const isUserInGroup = this.accessesRepository.existsBy({group_id, user_id})
+    if(isUserInGroup){
+      const newCode = this.generateInviteCode(this.#INVITE_CODE_LENGTH);
+      await this.inviteCodesRepository.insert({group_id, code: newCode});
+      return newCode;
+    }
+    return String(0)
+  }
+  async join(body: JoinGroupInput){
+    const code = body.code.split('-');
+    if(code[1].length!=10||code.length!=2) return false;
+    const isUserAlreadyInGroup = await this.accessesRepository.existsBy({group_id:+code[0], user_id:body.user_id})
+    if(isUserAlreadyInGroup) return true;
+    const isCodeCorrect = this.inviteCodesRepository.existsBy({group_id: +code[0], code:code[1]});
+    if(isCodeCorrect){
+      await this.accessesRepository.insert({
+        user_id:body.user_id,
+        group_id:+code[0],
+        status:GroupAccessesStatus.Default,
+      });
+      return true;
+    }
+    return false;
+  }
+
+  private generateInviteCode(length:number){
+    let total = "";
+    for(let i = 0; i < length; i++){
+      total+=Math.floor(Math.random()*9);
+    }
+    return total;
   }
 }

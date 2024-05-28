@@ -11,7 +11,6 @@ export class ImagesController {
     private imagesService:ImagesService
   ) {}
 
-
   @Post('/load-single')
   @UseInterceptors(FileInterceptor('file'))
   //@ts-ignore

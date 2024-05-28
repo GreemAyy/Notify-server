@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from "@nestjs/typeorm";
-import { TasksEntity } from "./tasks.entity";
+import { TaskAccessesEntity, TasksEntity } from "./tasks.entity";
 import { LessThanOrEqual, MoreThanOrEqual, Repository } from "typeorm";
-import type { ChangeStatusInput, DeleteImagesInput, DeleteInput, GetGroupTasksInput, GetUsersLocalTasksInput, SearchInput } from './tasks.controller';
+import type { ChangeStatusInput, CreateAccessTasks, CreateTaskInput, DeleteImagesInput, DeleteInput, GetGroupTasksInput, GetUsersLocalTasksInput, SearchInput } from './tasks.controller';
 import { ImagesEntity } from 'src/images/images.entity';
 import * as path from 'path'
 import * as asyncfs from 'fs/promises'
@@ -13,7 +13,9 @@ export class TasksService {
     @InjectRepository(TasksEntity)
     private tasksRepository: Repository<TasksEntity>,
     @InjectRepository(ImagesEntity)
-    private imagesRepository: Repository<ImagesEntity>
+    private imagesRepository: Repository<ImagesEntity>,
+    @InjectRepository(TaskAccessesEntity)
+    private taskAccessesRepository: Repository<TaskAccessesEntity>
   ){}
 
   async createTask(task: TasksEntity):Promise<number>{
@@ -82,7 +84,6 @@ export class TasksService {
       let data = await this.tasksRepository.createQueryBuilder("tasks")
       .where(`tasks.title LIKE :text OR tasks.description LIKE :text and "tasks.group_id = :groupId" and ${groupId != 0 ? "tasks.creator_id > 0" : "tasks.creator_id = :id"}`, { text: `%${text}%`,groupId: groupId, id: id })
       .getMany();  
-    console.log(data);
     return data
   }
 
@@ -90,8 +91,20 @@ export class TasksService {
     return await this.tasksRepository.findBy({group_id:id});
   }
 
+  async getTaskAccess(id:number){
+    console.log(id)
+    return await this.taskAccessesRepository.findOneBy({task_id:id})
+  }
+
   async getSingle(id:number){
-    return await this.tasksRepository.findOneBy({id});
+    return await this.tasksRepository.findOneBy({id:id})
+  }
+
+  async createTaskAccess(access: CreateAccessTasks){
+    try{
+      await this.taskAccessesRepository.insert(access)
+      return true
+    }catch(_){return false}
   }
 
   async deleteImages(body: DeleteImagesInput){

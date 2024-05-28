@@ -36,4 +36,16 @@ export class TasksEntity{
   images_id:Array<number>
   @Column({name:"status", type:'tinyint', default:0})
   status:0|1|number
+  @Column({name:"full_access", type:'tinyint', default:1})
+  full_access:0|1|number
+}
+
+@Entity('task_accesses')
+export class TaskAccessesEntity{
+  @PrimaryGeneratedColumn({name:'id', type:'int'})
+  id:number
+  @Column({name:'task_id', type:"int"})
+  task_id:number
+  @Column({name:'users_id', type:"json"})
+  users_id:number[]
 }
